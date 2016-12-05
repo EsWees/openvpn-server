@@ -1,0 +1,2 @@
+MSERVICE="openvpn-server"
+REGISTRY="docker.io"

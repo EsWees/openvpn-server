@@ -12,6 +12,7 @@ pipeline {
           "pStep2": {
             echo 'step2'
             sh 'echo "Step from this pipelie"'
+            sh 'exit 1'
             
           }
         )

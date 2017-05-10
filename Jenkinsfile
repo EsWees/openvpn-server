@@ -1,7 +1,7 @@
 pipeline {
   agent any
   stages {
-    stage('') {
+    stage('error') {
       steps {
         parallel(
           "Start": {
@@ -25,6 +25,11 @@ pipeline {
     stage('Start') {
       steps {
         sh './app.sh'
+      }
+    }
+    stage('Deploy?') {
+      steps {
+        input(message: 'Deploy to UAT', ok: 'NOTOK')
       }
     }
   }

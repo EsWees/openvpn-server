@@ -4,12 +4,12 @@ pipeline {
     stage('error') {
       steps {
         parallel(
-          "Start": {
+          "pStep1": {
             echo 'Start pipeline'
             sleep 5
             
           },
-          "Start2": {
+          "pStep2": {
             echo 'step2'
             sh 'echo "Step from this pipelie"'
             
@@ -17,17 +17,17 @@ pipeline {
         )
       }
     }
-    stage('Build') {
+    stage('Build step') {
       steps {
         sh './build.sh'
       }
     }
-    stage('Start') {
+    stage('Start app') {
       steps {
         sh './app.sh'
       }
     }
-    stage('Deploy?') {
+    stage('Deploy app confirmation') {
       steps {
         input(message: 'Deploy to UAT', ok: 'NOTOK')
       }

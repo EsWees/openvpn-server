@@ -19,17 +19,17 @@ pipeline {
     }
     stage('Build step') {
       steps {
-        sh './build.sh'
+        sh 'sleep 120'
       }
     }
     stage('Start app') {
       steps {
-        sh './app.sh'
+        sh 'sleep 30'
       }
     }
     stage('Deploy app confirmation') {
       steps {
-        input(message: 'Deploy to UAT', ok: 'NOTOK')
+        input(message: 'Approve', ok: 'Yes. Deploy this into production')
       }
     }
   }

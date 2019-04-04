@@ -9,12 +9,12 @@ pipeline {
     }
     stage('Build step') {
       steps {
-        sh 'sleep 120'
+        sleep 5
       }
     }
     stage('Start app') {
       steps {
-        sh 'sleep 30'
+        sleep 2
       }
     }
     stage('Deploy app confirmation') {

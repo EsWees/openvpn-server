@@ -1,20 +1,10 @@
 pipeline {
   agent any
   stages {
-    stage('error') {
+    stage('pStep1') {
       steps {
-        parallel(
-          "pStep1": {
-            echo 'Start pipeline'
-            sleep 5
-            
-          },
-          "pStep2": {
-            echo 'step2'
-            sh 'echo "Step from this pipelie"'
-            
-          }
-        )
+        echo 'Start pipeline'
+        sleep 5
       }
     }
     stage('Build step') {

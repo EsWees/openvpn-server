@@ -113,7 +113,7 @@ if [ ! -f $PRV_KEY ] || [ ! -f $SRV_CRT ]; then
 	openssl req -new -nodes -keyout $SRV_KEY -out $CA_CSR -subj /C=${_country}/ST=${_state}/L=${_location}/O=${_org_name}/CN=${_contact_name}
 	chmod g-r $SRV_KEY
 	openssl ca -batch -config openssl.cnf -extensions server -out $SRV_CRT -infiles $CA_CSR
-  chmod 600 $PRV_KEY
+	chmod 600 $PRV_KEY
 fi
 if [ ! -f $CRL_CRT ]; then
 	openssl ca -config openssl.cnf -gencrl -out $CRL_CRT
@@ -147,18 +147,7 @@ persist-key
 persist-tun
 verb 3
 management 0.0.0.0 5555
-client-connect '${DIR}'/on_connect.sh
-client-disconnect '${DIR}'/on_disconnect.sh
-script-security 3
 ' > server.conf
-fi
-if [ ! -f ${DIR}/on_connect.sh ] || [ ! -f ${DIR}/on_disconnect.sh ]; then
-	for files_connection in ${DIR}/on_connect.sh ${DIR}/on_disconnect.sh; do
-		echo '#!/usr/local/env bash' > $files_connection
-	done
-fi
-if [ ! -x ${DIR}/on_connect.sh ] || [ ! -x ${DIR}/on_disconnect.sh ]; then
-	chmod +x ${DIR}/on_connect.sh ${DIR}/on_disconnect.sh
 fi
 # ---
 if [ ! -f openvpn_adduser_$CONF_NAME ]; then

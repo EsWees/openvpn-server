@@ -33,9 +33,9 @@ DIR="${CONF_NAME}_server"
 ############################################################################################################################
 # ---
 ## Fix missing devices for newer docker image
-mkdir -p /dev/net
-mknod /dev/net/tun c 10 200
-chmod 600 /dev/net/tun
+mkdir -p /dev/net || true
+mknod /dev/net/tun c 10 200 || true
+chmod 600 /dev/net/tun || true
 # ---
 if [ ! -d ${DIR} ] || [ ! -d ${DST} ]; then
 	mkdir -p ${DST} ${DIR}

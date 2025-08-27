@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openvpn
+spec:
+  selector:
+    matchLabels:
+      app: openvpn
+  serviceName: "openvpn-service"
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: openvpn
+    spec:
+      hostNetwork: true
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: openvpn
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - name: openvpn
+        image: eswees/openvpn-server:latest
+        env:
+        - name: SRV_ADDR
+          value: "vpn.localhost"
+        - name: SRV_PORT
+          value: "1194"
+        - name: SRV_PROTO
+          value: "udp"
+        - name: SRV_NET
+          value: "10.0.27.0"
+        - name: C
+          value: "US"
+        - name: ST
+          value: "No"
+        - name: L
+          value: "Noname"
+        - name: O
+          value: "PyHead"
+        - name: ODEF
+          value: "PyHead and co."
+        - name: CN
+          value: "root@localhost"
+        - name: SNAME
+          value: "localhost"
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - NET_ADMIN
+              - NET_RAW
+        volumeMounts:
+        - name: openvpn-data
+          mountPath: /etc/openvpn
+      volumes:
+      - name: openvpn-data
+        persistentVolumeClaim:
+          claimName: openvpn-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openvpn-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi

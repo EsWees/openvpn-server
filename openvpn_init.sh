@@ -179,7 +179,7 @@ if [ "$1" != "" ]; then
         cp keys/$1.key  ../'${DST}'/${1/[[:space:]]*/}
 
         echo "client
-remote '$SRV_ADDR:$SRV_PORT'
+remote '$SRV_ADDR $SRV_PORT'
 proto '$PROTO'
 dev '$DEV'
 tls-client
@@ -194,7 +194,7 @@ mssfix 1450
 tun-mtu 1500" > ../'${DST}'/${1/[[:space:]]*/}/'$CONF_NAME'.conf
 
         echo "client
-remote          '$SRV_ADDR:$SRV_PORT'
+remote          '$SRV_ADDR $SRV_PORT'
 proto           '$PROTO'
 dev             '$DEV'
 tls-client

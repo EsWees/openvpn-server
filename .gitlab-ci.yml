@@ -1,0 +1,43 @@
+stages:
+  - build
+
+variables:
+  IMAGE_NAME: "eswees/openvpn-server"
+
+build_multiarch:
+  stage: build
+  image:
+    name: moby/buildkit:rootless
+    # docker:
+    #   user: root
+  variables:
+    BUILDKIT_SOCK: "unix:///run/user/1000/buildkit/buildkitd.sock"
+    BUILDKITD_FLAGS: "--allow-insecure-entitlement security.insecure --oci-worker-no-process-sandbox"
+  before_script:
+    - mkdir -p ~/.docker
+    - |
+      echo "{
+        \"auths\": {
+          \"${CI_REGISTRY}\": {
+            \"auth\": \"$(echo -n "${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}" | base64)\"
+          },
+          \"https://index.docker.io/v1/\": {
+            \"auth\": \"$(echo -n ${DOCKER_HUB_USER}:${DOCKER_HUB_PASSWORD} | base64)\"
+          }
+        }
+      }" > ~/.docker/config.json
+  script:
+    - cat ~/.docker/config.json
+    - buildctl-daemonless.sh build
+        --allow security.insecure
+        --frontend dockerfile.v0
+        --local context="${CI_PROJECT_DIR}"
+        --local dockerfile="${CI_PROJECT_DIR}"
+        --opt platform=linux/amd64,linux/arm64
+        --export-cache type=registry,ref=${CI_REGISTRY_IMAGE}:buildcache
+        --import-cache type=registry,ref=${CI_REGISTRY_IMAGE}:buildcache
+        --output type=image,name=${IMAGE_NAME}:latest,push=true
+        --output type=image,name=${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA},push=true
+        --output type=image,name=${CI_REGISTRY_IMAGE}:latest,push=true
+  tags:
+    - kubernetes

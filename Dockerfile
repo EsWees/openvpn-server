@@ -1,35 +1,33 @@
-FROM centos:latest
+FROM fedora:latest
 
-MAINTAINER Yuriy Golik <eswees@pyhead.net>
+LABEL description="Linux (Fedora) + OpenSSL + OpenVPN"
+LABEL license="As is"
+LABEL usage="docker run -d -p 1194:1194 -p 5555:5555 eswees/openvpn-server"
+LABEL version="1.5"
+LABEL maintainer="Yuriy Golik <eswees@pyhead.net>"
 
-LABEL Description="Linux (CentOS) + OpenSSL + OpenVPN." \
-      License="As is" \
-      Usage="docker run -d -p 1194:1194 -p 5555:5555 eswees/openvpn-server" \
-      Version="1.4"
+ENV SRV_ADDR=vpn.localhost
+ENV SRV_PORT=1194
+ENV SRV_PROTO=udp
+ENV SRV_NET=10.0.27.0
 
-ENV SRV_ADDR vpn.localhost
-ENV SRV_PORT 1194
-ENV SRV_PROTO udp
-ENV SRV_NET 10.0.27.0
-
-ENV C OOPS
-ENV ST NO
-ENV L Noname
-ENV O PyHead
-ENV ODEF PyHead and co.
-ENV CN root@localhost
-ENV SNAME localhost
+ENV C=US
+ENV ST=No
+ENV L=Noname
+ENV O=PyHead
+ENV ODEF="PyHead and co."
+ENV CN=root@localhost
+ENV SNAME=localhost
 
 EXPOSE 1194
 EXPOSE 5555
 
 WORKDIR /etc/openvpn/
 
-RUN yum install -y epel-release && yum install -y \
+RUN dnf install -y \
 		openvpn \
 		openssl \
-		mutt \
-	&& yum clean all
+	&& dnf clean all
 
 COPY openvpn_init.sh /
 RUN chmod +x /openvpn_init.sh

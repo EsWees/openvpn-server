@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 ### --- DEBUG
-#set -u
-#set -e
-#set -x
+set -u
+set -e
+# set -x
 ### System REQ.:
 _country="${C/[[:space:]]*/}"
 _state="${ST/[[:space:]]*/}"
@@ -31,6 +31,11 @@ DIR="${CONF_NAME}_server"
 ############################################################################################################################
 ### CONFIG ### CONFIG ### CONFIG ### CONFIG ### CONFIG ### CONFIG ### CONFIG ### CONFIG ### CONFIG ### CONFIG ### CONFIG ###
 ############################################################################################################################
+# ---
+## Fix missing devices for newer docker image
+mkdir -p /dev/net
+mknod /dev/net/tun c 10 200
+chmod 600 /dev/net/tun
 # ---
 if [ ! -d ${DIR} ] || [ ! -d ${DST} ]; then
 	mkdir -p ${DST} ${DIR}
@@ -115,7 +120,7 @@ if [ ! -f $CRL_CRT ]; then
 fi
 # ---
 if [ ! -f $TA_KEY ]; then
-	openvpn --genkey --secret $TA_KEY
+	openvpn --genkey secret $TA_KEY
 fi
 # ---
 if [ ! -f $dh2048 ]; then
@@ -135,7 +140,6 @@ server '$SRV_NET' 255.255.255.0
 client-config-dir '$DIR'/ccd
 client-to-client
 tls-server
-comp-lzo
 keepalive 10 120
 tun-mtu 1500
 mssfix 1450
@@ -145,7 +149,7 @@ verb 3
 management 0.0.0.0 5555
 client-connect '${DIR}'/on_connect.sh
 client-disconnect '${DIR}'/on_disconnect.sh
-script-security 3 system
+script-security 3
 ' > server.conf
 fi
 if [ ! -f ${DIR}/on_connect.sh ] || [ ! -f ${DIR}/on_disconnect.sh ]; then
@@ -158,10 +162,9 @@ if [ ! -x ${DIR}/on_connect.sh ] || [ ! -x ${DIR}/on_disconnect.sh ]; then
 fi
 # ---
 if [ ! -f openvpn_adduser_$CONF_NAME ]; then
-	echo '#!/usr/bin/env bash
+	echo '#!/usr/bin/bash
 set -e
 set -u
-set -x
 : ${1?E_NOPARAM}
 pushd $(dirname $0)/'${DIR}'
 if [ "$1" != "" ]; then
@@ -176,9 +179,8 @@ if [ "$1" != "" ]; then
         cp keys/$1.key  ../'${DST}'/${1/[[:space:]]*/}
 
         echo "client
-remote '$SRV_ADDR'
+remote '$SRV_ADDR:$SRV_PORT'
 proto '$PROTO'
-rport '$SRV_PORT'
 dev '$DEV'
 tls-client
 ca CA.crt
@@ -192,8 +194,7 @@ mssfix 1450
 tun-mtu 1500" > ../'${DST}'/${1/[[:space:]]*/}/'$CONF_NAME'.conf
 
         echo "client
-remote          '$SRV_ADDR'
-rport           '$SRV_PORT'
+remote          '$SRV_ADDR:$SRV_PORT'
 proto           '$PROTO'
 dev             '$DEV'
 tls-client
@@ -226,20 +227,15 @@ $(cat ta.key)
         ${1/[[:space:]]*/}.key - Client key file from client cert
         '$CONF_NAME'.conf - Client config for ${1/[[:space:]]*/}
         '$CONF_NAME'.ovpn - Client config for ${1/[[:space:]]*/} (OneFile configuration)"
-
-	if [ "$2" != "" ]; then
-	        tar -cf ../'${DST}'/${1/[[:space:]]*/}.tar ../'${DST}'/${1/[[:space:]]*/}
-	        echo "See attach" | mutt $2 -a ../'${DST}'/${1/[[:space:]]*/}/'$CONF_NAME'.ovpn -a ../'${DST}'/${1/[[:space:]]*/}.tar -s "Secure VPN" -x
-	fi
 else
-        echo " -- Please provide username in argument! Ex: $(basename $0) name [email]"
+        echo " -- Please provide username in argument! Ex: $(basename $0) name"
 fi
 popd
 ' > adduser_openvpn_$CONF_NAME
 fi
 # ---
 if [ ! -f deluser_openvpn_$CONF_NAME ]; then
-	echo '#!/usr/bin/env bash
+	echo '#!/usr/bin/bash
 set -e
 set -u
 pushd $(dirname $0)/'${DIR}'
@@ -258,4 +254,7 @@ if [ ! -x adduser_openvpn_$CONF_NAME ] || [ ! -x deluser_openvpn_$CONF_NAME ]; t
 	chmod +x adduser_openvpn_$CONF_NAME deluser_openvpn_$CONF_NAME
 fi
 # ---
+if [ ! -f users_bundle/client/$CONF_NAME.ovpn ]; then
+	bash ./adduser_openvpn_$CONF_NAME client
+fi
 $@

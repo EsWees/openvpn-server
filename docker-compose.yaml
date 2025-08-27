@@ -1,0 +1,23 @@
+services:
+  openvpn:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/etc/openvpn
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      - SRV_ADDR=vpn.localhost ## IP or DNS
+      - SRV_PORT=1194 ## Port for listening
+      - SRV_PROTO=udp ## Protocols tcp or udp or "tcp udp"
+      - SRV_NET=10.0.27.0 ## Network inside the VPN
+      - C=US ## Country
+      - ST=No ## State
+      - L=Noname ## Location
+      - O=PyHead ## Organization
+      - ODEF="PyHead and co." ## Organizational Unit
+      - CN=root@localhost ## Common Name
+      - SNAME=localhost ## Server Name
